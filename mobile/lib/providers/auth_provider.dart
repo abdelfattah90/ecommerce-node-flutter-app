@@ -1,25 +1,38 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
-import '../services/auth_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AuthProvider with ChangeNotifier {
-  User? _user;
+  String? _username;
+  bool _isRegistered = false;
 
-  User? get user => _user;
+  String? get username => _username;
+  bool get isRegistered => _isRegistered;
 
-  Future<void> register(
-      String username, String password, String passwordConfirm) async {
-    _user = await AuthService.register(username, password, passwordConfirm);
-    notifyListeners();
-  }
+  Future<void> register(String username, String email, String password) async {
+    final url = Uri.parse(
+        'https://ecommerce-node-flutter-app.vercel.app/users/register');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
 
-  Future<void> login(String username, String password) async {
-    _user = await AuthService.login(username, password);
-    notifyListeners();
-  }
-
-  Future<void> googleLogin() async {
-    _user = await AuthService.googleLogin();
-    notifyListeners();
+      if (response.statusCode == 201) {
+        final responseData = json.decode(response.body);
+        _username = responseData['username'];
+        _isRegistered = true;
+        notifyListeners();
+      } else {
+        throw Exception('Failed to register');
+      }
+    } catch (error) {
+      rethrow;
+    }
   }
 }

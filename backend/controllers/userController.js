@@ -1,82 +1,27 @@
-import asyncHandler from 'express-async-handler'
 import User from '../models/User.js'
-import bcrypt from 'bcryptjs'
 
-// @desc    Register a new user
-// @route   POST /api/users/register
-// @access  Public
-const registerUser = asyncHandler(async (req, res) => {
-  const { username, password, passwordConfirm } = req.body
+export const registerUser = async (req, res) => {
+  const { username, email, password } = req.body
 
-  if (password !== passwordConfirm) {
-    res.status(400)
-    throw new Error('Passwords do not match')
-  }
+  try {
+    const userExists = await User.findOne({ email })
+    if (userExists) {
+      return res.status(400).json({ message: 'Email already exists' })
+    }
 
-  const userExists = await User.findOne({ username })
+    const newUser = new User({
+      username,
+      email,
+      password,
+    })
 
-  if (userExists) {
-    res.status(400)
-    throw new Error('User already exists')
-  }
-
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(password, salt)
-
-  const user = await User.create({
-    username,
-    password: hashedPassword,
-  })
-
-  if (user) {
+    const savedUser = await newUser.save()
     res.status(201).json({
-      _id: user._id,
-      username: user.username,
+      _id: savedUser._id,
+      username: savedUser.username,
+      email: savedUser.email,
     })
-  } else {
-    res.status(400)
-    throw new Error('Invalid user data')
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message })
   }
-})
-
-// @desc    Auth user & get token
-// @route   POST /api/users/login
-// @access  Public
-const authUser = asyncHandler(async (req, res) => {
-  const { username, password } = req.body
-
-  const user = await User.findOne({ username })
-
-  if (user && (await bcrypt.compare(password, user.password))) {
-    res.json({
-      _id: user._id,
-      username: user.username,
-    })
-  } else {
-    res.status(401)
-    throw new Error('Invalid username or password')
-  }
-})
-
-// @desc    Auth user with Google
-// @route   POST /api/users/google-login
-// @access  Public
-const googleLogin = asyncHandler(async (req, res) => {
-  const { googleId } = req.body
-
-  let user = await User.findOne({ googleId })
-
-  if (!user) {
-    user = await User.create({
-      googleId,
-      username: req.body.username,
-    })
-  }
-
-  res.json({
-    _id: user._id,
-    username: user.username,
-  })
-})
-
-export { registerUser, authUser, googleLogin }
+}

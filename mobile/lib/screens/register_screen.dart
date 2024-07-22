@@ -10,53 +10,67 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _passwordConfirmController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  String _username = '';
+  String _email = '';
+  String _password = '';
 
   void _register() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-    try {
-      await authProvider.register(
-        _usernameController.text,
-        _passwordController.text,
-        _passwordConfirmController.text,
-      );
-      // Navigate to another screen on successful registration
-    } catch (error) {
-      // Handle registration error
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      try {
+        await authProvider.register(_username, _email, _password);
+        if (mounted && authProvider.isRegistered) {
+          Navigator.of(context).pushReplacementNamed('/profile');
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Registration failed')));
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      appBar: AppBar(
+        title: Text('Register Screen'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: _passwordConfirmController,
-              decoration: const InputDecoration(labelText: 'Confirm Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _register,
-              child: const Text('Register'),
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: <Widget>[
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Username'),
+                onSaved: (value) => _username = value!,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter a username' : null,
+              ),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Email'),
+                onSaved: (value) => _email = value!,
+                validator: (value) => value!.isEmpty ? 'Enter an email' : null,
+              ),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                onSaved: (value) => _password = value!,
+                validator: (value) => value!.length < 6
+                    ? 'Password must be at least 6 characters'
+                    : null,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _register,
+                child: Text('Register'),
+              ),
+            ],
+          ),
         ),
       ),
     );
