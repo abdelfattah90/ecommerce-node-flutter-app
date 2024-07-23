@@ -25,9 +25,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pushReplacementNamed('/profile');
         }
       } catch (error) {
+        print('Registration error: $error');
         if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Registration failed')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration failed')),
+          );
         }
       }
     }
@@ -37,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Register Screen'),
+        title: const Text('Register Screen'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -46,28 +48,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             children: <Widget>[
               TextFormField(
-                decoration: InputDecoration(labelText: 'Username'),
+                decoration: const InputDecoration(labelText: 'Username'),
                 onSaved: (value) => _username = value!,
                 validator: (value) =>
                     value!.isEmpty ? 'Enter a username' : null,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(labelText: 'Email'),
                 onSaved: (value) => _email = value!,
                 validator: (value) => value!.isEmpty ? 'Enter an email' : null,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 onSaved: (value) => _password = value!,
                 validator: (value) => value!.length < 6
                     ? 'Password must be at least 6 characters'
                     : null,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _register,
-                child: Text('Register'),
+                child: const Text('Register'),
               ),
             ],
           ),

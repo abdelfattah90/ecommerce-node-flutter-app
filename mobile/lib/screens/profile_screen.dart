@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: Center(
         child: Text(
-          'Welcome, ${authProvider.username}',
+          'Welcome, ${authProvider.user?.username ?? 'User'}',
           style: const TextStyle(fontSize: 24),
         ),
       ),

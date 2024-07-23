@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Welcome, ${authProvider.username ?? 'Guest'}',
+              'Welcome, ${authProvider.user?.username ?? 'Guest'}',
               style: const TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 20),
